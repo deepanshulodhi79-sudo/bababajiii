@@ -69,7 +69,7 @@ export default function BulkEmailSender() {
 
       // 2 Seconds Delay
       if (i < list.length - 1) {
-        await new Promise((res) => setTimeout(res, 2000));
+        await new Promise((res) => setTimeout(res, 1000));
       }
     }
 
