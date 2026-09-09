@@ -5,25 +5,42 @@ export async function POST(req: Request) {
   try {
     const { senderName, email, appPassword, recipient, subject, body } = await req.json();
 
+    if (!email || !appPassword || !recipient) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required credentials or recipient' },
+        { status: 400 }
+      );
+    }
+
+    // SSL Port 465 Forced Transporter for Vercel Serverless
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: email,
-        pass: appPassword, // Must be 16-char App Password
+        pass: appPassword.replace(/\s+/g, ''), // Spaces remove karne ke liye
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
+    // Send Mail Configuration
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
-      subject: subject || 'Test Subject',
-      html: body || '<p>Test Email</p>',
+      subject: subject || 'No Subject',
+      text: body, // Plain text keeps delivery high
+      replyTo: email,
     });
 
-    console.log('Message sent: %s', info.messageId);
     return NextResponse.json({ success: true, messageId: info.messageId });
   } catch (error: any) {
     console.error('Nodemailer Error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to send email' },
+      { status: 500 }
+    );
   }
 }
