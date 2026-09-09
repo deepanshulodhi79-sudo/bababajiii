@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function BulkEmailSender() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,10 @@ export default function BulkEmailSender() {
 
   const [status, setStatus] = useState({ total: 0, sent: 0, failed: 0, remaining: 0 });
   const [isSending, setIsSending] = useState(false);
+
+  // Form data ki latest values hold karne ke liye reference
+  const latestFormRef = useRef(formData);
+  latestFormRef.current = formData;
 
   const handleSend = async () => {
     const list = formData.recipients
@@ -32,16 +36,20 @@ export default function BulkEmailSender() {
 
     for (let i = 0; i < list.length; i++) {
       const recipient = list[i];
+      
+      // Active state values dynamic pickup
+      const currentConfig = latestFormRef.current;
+
       try {
         const res = await fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            senderName: formData.senderName,
-            email: formData.email,
-            appPassword: formData.appPassword,
-            subject: formData.subject,
-            body: formData.body,
+            senderName: currentConfig.senderName,
+            email: currentConfig.email,
+            appPassword: currentConfig.appPassword,
+            subject: currentConfig.subject,
+            body: currentConfig.body,
             recipient: recipient,
           }),
         });
@@ -63,9 +71,9 @@ export default function BulkEmailSender() {
         remaining: list.length - (sentCount + failedCount),
       });
 
-      // 3-second delay to prevent Google from dropping mails
+      // Exactly 2-Second Delay
       if (i < list.length - 1) {
-        await new Promise((res) => setTimeout(res, 3000));
+        await new Promise((res) => setTimeout(res, 2000));
       }
     }
 
@@ -77,7 +85,6 @@ export default function BulkEmailSender() {
     <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
       <h2>Secure Bulk Mailer</h2>
       
-      {/* Campaign Monitor */}
       <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', background: '#f0f0f0', padding: '15px', borderRadius: '8px' }}>
         <div><b>TOTAL:</b> {status.total}</div>
         <div style={{ color: 'green' }}><b>SENT:</b> {status.sent}</div>
@@ -85,7 +92,6 @@ export default function BulkEmailSender() {
         <div style={{ color: 'orange' }}><b>REMAINING:</b> {status.remaining}</div>
       </div>
 
-      {/* Form Fields */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <input
           type="text"
@@ -103,7 +109,7 @@ export default function BulkEmailSender() {
         />
         <input
           type="password"
-          placeholder="16-character App Password (No spaces)"
+          placeholder="16-character App Password"
           value={formData.appPassword}
           onChange={(e) => setFormData({ ...formData, appPassword: e.target.value })}
           style={{ padding: '10px' }}
