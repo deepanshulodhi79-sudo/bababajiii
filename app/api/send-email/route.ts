@@ -7,31 +7,34 @@ export async function POST(req: Request) {
 
     if (!email || !appPassword || !recipient) {
       return NextResponse.json(
-        { success: false, error: 'Missing required credentials or recipient' },
+        { success: false, error: 'Missing credentials or recipient' },
         { status: 400 }
       );
     }
 
-    // SSL Port 465 Forced Transporter for Vercel Serverless
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
-      secure: true,
+      secure: true, // SSL Port for Vercel
       auth: {
         user: email,
-        pass: appPassword.replace(/\s+/g, ''), // Spaces remove karne ke liye
+        pass: appPassword.replace(/\s+/g, ''),
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
 
-    // Send Mail Configuration
+    // Clean plain text to line breaks HTML wrapper
+    const formattedHtml = `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">${(body || '')
+      .replace(/\n/g, '<br/>')}</div>`;
+
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body, // Plain text keeps delivery high
+      text: body, // Fallback text
+      html: formattedHtml, // Primary HTML format to pass Gmail spam filters
       replyTo: email,
     });
 
