@@ -24,8 +24,7 @@ export default function BulkEmailSender() {
     if (list.length === 0) return alert('Please enter at least one recipient email.');
     if (!formData.email || !formData.appPassword) return alert('Gmail address and App Password are required.');
 
-    // LOCK CURRENT CREDENTIALS FOR THIS BATCH
-    // A-ID freeze ho jayegi, aap B-ID type karke rakhte raho par send A-ID se hi hoga jab tak batch khatam na ho
+    // LOCK CURRENT CREDENTIALS FOR ENTIRE BATCH
     const currentBatchConfig = { ...formData };
 
     setIsSending(true);
@@ -68,9 +67,9 @@ export default function BulkEmailSender() {
         remaining: list.length - (sentCount + failedCount),
       });
 
-      // EXACTLY 2 SECONDS DELAY
+      // 2 Seconds Delay
       if (i < list.length - 1) {
-        await new Promise((res) => setTimeout(res, 800));
+        await new Promise((res) => setTimeout(res, 2000));
       }
     }
 
