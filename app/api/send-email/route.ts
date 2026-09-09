@@ -5,27 +5,25 @@ export async function POST(req: Request) {
   try {
     const { senderName, email, appPassword, recipient, subject, body } = await req.json();
 
-    if (!email || !appPassword || !recipient) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
-    }
-
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: email,
-        pass: appPassword,
+        pass: appPassword, // Must be 16-char App Password
       },
     });
 
-    await transporter.sendMail({
-      from: `"${senderName || email}" <${email}>`,
+    const info = await transporter.sendMail({
+      from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
-      subject: subject || 'No Subject',
-      html: body || '',
+      subject: subject || 'Test Subject',
+      html: body || '<p>Test Email</p>',
     });
 
-    return NextResponse.json({ success: true, recipient });
+    console.log('Message sent: %s', info.messageId);
+    return NextResponse.json({ success: true, messageId: info.messageId });
   } catch (error: any) {
+    console.error('Nodemailer Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
