@@ -25,30 +25,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // Clean Outlook-friendly HTML Wrapper with standard inline font styles
-    const formattedHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            p, div { font-family: Arial, sans-serif !important; font-size: 16px !important; color: #222222 !important; }
-          </style>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 16px; color: #222222;">
-          <div style="font-family: Arial, sans-serif; font-size: 16px; color: #222222; line-height: 1.6;">
-            ${(body || '').replace(/\n/g, '<br/>')}
-          </div>
-        </body>
-      </html>
-    `;
-
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body, // Plain text match helps Inbox placement
-      html: formattedHtml,
+      text: body, // Standard plain-text delivery
       replyTo: email,
     });
 
