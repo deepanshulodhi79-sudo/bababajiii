@@ -12,33 +12,43 @@ export async function POST(req: Request) {
       );
     }
 
-    // Port 465 SSL Transporter for Vercel
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
       secure: true,
       auth: {
         user: email,
-        pass: appPassword.replace(/\s+/g, ''), // Spaces remove karne ke liye
+        pass: appPassword.replace(/\s+/g, ''),
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
 
-    // Explicit inline CSS wrapper to prevent shrinking font in Outlook & Quoted Replies
+    // Clean Outlook-friendly HTML Wrapper with standard inline font styles
     const formattedHtml = `
-      <div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #222222; line-height: 1.5;">
-        ${(body || '').replace(/\n/g, '<br/>')}
-      </div>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            p, div { font-family: Arial, sans-serif !important; font-size: 16px !important; color: #222222 !important; }
+          </style>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 16px; color: #222222;">
+          <div style="font-family: Arial, sans-serif; font-size: 16px; color: #222222; line-height: 1.6;">
+            ${(body || '').replace(/\n/g, '<br/>')}
+          </div>
+        </body>
+      </html>
     `;
 
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body, // Plain text fallback
-      html: formattedHtml, // HTML body with explicit typography
+      text: body, // Plain text match helps Inbox placement
+      html: formattedHtml,
       replyTo: email,
     });
 
