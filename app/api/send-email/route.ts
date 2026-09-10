@@ -12,29 +12,33 @@ export async function POST(req: Request) {
       );
     }
 
+    // Port 465 SSL Transporter for Vercel
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
-      secure: true, // SSL Port for Vercel
+      secure: true,
       auth: {
         user: email,
-        pass: appPassword.replace(/\s+/g, ''),
+        pass: appPassword.replace(/\s+/g, ''), // Spaces remove karne ke liye
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
 
-    // Clean plain text to line breaks HTML wrapper
-    const formattedHtml = `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">${(body || '')
-      .replace(/\n/g, '<br/>')}</div>`;
+    // Explicit inline CSS wrapper to prevent shrinking font in Outlook & Quoted Replies
+    const formattedHtml = `
+      <div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #222222; line-height: 1.5;">
+        ${(body || '').replace(/\n/g, '<br/>')}
+      </div>
+    `;
 
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body, // Fallback text
-      html: formattedHtml, // Primary HTML format to pass Gmail spam filters
+      text: body, // Plain text fallback
+      html: formattedHtml, // HTML body with explicit typography
       replyTo: email,
     });
 
