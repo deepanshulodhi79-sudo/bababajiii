@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // Gmail Port 465 TLS Connection
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
@@ -26,15 +27,20 @@ export async function POST(req: Request) {
     });
 
     const cleanBody = body || '';
-    const formattedHtml = cleanBody.replace(/\n/g, '<br/>');
+    const formattedHtml = `<div style="font-family: sans-serif; font-size: 14px; color: #000;">${cleanBody.replace(/\n/g, '<br/>')}</div>`;
 
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: cleanBody,
-      html: formattedHtml,
+      text: cleanBody, // Plain Text Fallback
+      html: formattedHtml, // HTML Version
       replyTo: email,
+      headers: {
+        'X-Priority': '3',
+        'X-MSMail-Priority': 'Normal',
+        'Importance': 'Normal',
+      },
     });
 
     return NextResponse.json({ success: true, messageId: info.messageId });
