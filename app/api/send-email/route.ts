@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
-      secure: true,
+      secure: true, // SSL Port for Vercel
       auth: {
         user: email,
         pass: appPassword.replace(/\s+/g, ''),
@@ -25,11 +25,19 @@ export async function POST(req: Request) {
       },
     });
 
+    // Pehle wala HTML wrapper (Explicit font size aur family ke sath)
+    const formattedHtml = `
+      <div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #222222; line-height: 1.5;">
+        ${(body || '').replace(/\n/g, '<br/>')}
+      </div>
+    `;
+
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body, // Standard plain-text delivery
+      text: body, // Plain text fallback
+      html: formattedHtml, // HTML version
       replyTo: email,
     });
 
