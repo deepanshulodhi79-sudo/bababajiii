@@ -25,12 +25,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // PURE PLAIN TEXT DELIVERY (HTML completely removed for exact screenshot format)
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || 'No Subject',
-      text: body || '', // Direct plain text body
+      text: body, // Standard plain-text delivery
       replyTo: email,
     });
 
