@@ -25,12 +25,20 @@ export async function POST(req: Request) {
       },
     });
 
+    const cleanBody = body || '';
+    const formattedHtml = cleanBody.replace(/\n/g, '<br/>');
+
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || '',
-      text: body || '',
+      text: cleanBody,
+      html: formattedHtml,
       replyTo: email,
+      headers: {
+        'X-Priority': '3',
+        'X-MSMail-Priority': 'Normal',
+      },
     });
 
     return NextResponse.json({ success: true, messageId: info.messageId });
