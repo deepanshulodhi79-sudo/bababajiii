@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
-      subject: subject || 'No Subject',
+      subject: subject || '',
       text: cleanBody,
       html: formattedHtml,
       replyTo: email,
@@ -39,7 +39,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, messageId: info.messageId });
   } catch (error: any) {
-    console.error('Nodemailer Error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed' },
       { status: 500 }
