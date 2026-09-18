@@ -20,23 +20,14 @@ export async function POST(req: Request) {
         user: email,
         pass: appPassword.replace(/\s+/g, ''),
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
     });
-
-    const textBody = body || '';
-
-    // Hidden micro-timestamp: Iss se content har mail me unique banta hai aur Google spam filter detect nahi karta
-    const htmlBody = `<div style="font-family: Arial, sans-serif; font-size: 15px; color: #222222; line-height: 1.5;">${textBody.replace(/\n/g, '<br/>')}</div><!-- ${Date.now()} -->`;
 
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || '',
-      text: textBody,
-      html: htmlBody,
-      replyTo: email,
+      text: body || '',
+      html: (body || '').replace(/\n/g, '<br/>'),
     });
 
     return NextResponse.json({ success: true, messageId: info.messageId });
