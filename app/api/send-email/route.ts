@@ -20,21 +20,30 @@ export async function POST(req: Request) {
         user: email,
         pass: appPassword.replace(/\s+/g, ''),
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
     });
 
-    const cleanBody = body || '';
-    const formattedHtml = `<div style="font-family: Arial, sans-serif; font-size: 15px; color: #222222; line-height: 1.5;">${cleanBody.replace(/\n/g, '<br/>')}</div>`;
+    const textBody = body || '';
+    
+    // Clean, high-deliverability HTML layout
+    const htmlBody = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background-color:#ffffff; font-family:Arial, sans-serif; font-size:15px; color:#222222; line-height:1.5;">
+  <div style="padding:10px;">
+    ${textBody.replace(/\n/g, '<br/>')}
+  </div>
+</body>
+</html>`;
 
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || '',
-      text: cleanBody,
-      html: formattedHtml,
-      replyTo: email,
+      text: textBody,
+      html: htmlBody,
     });
 
     return NextResponse.json({ success: true, messageId: info.messageId });
