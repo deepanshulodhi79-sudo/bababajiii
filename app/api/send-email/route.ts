@@ -22,12 +22,17 @@ export async function POST(req: Request) {
       },
     });
 
+    const cleanBody = body || '';
+    
+    // Bold font inline styling wrapper
+    const boldHtmlBody = `<div style="font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; color: #111111; line-height: 1.5;">${cleanBody.replace(/\n/g, '<br/>')}</div><!-- ${Date.now()} -->`;
+
     const info = await transporter.sendMail({
       from: `"${senderName || 'Sender'}" <${email}>`,
       to: recipient,
       subject: subject || '',
-      text: body || '',
-      html: (body || '').replace(/\n/g, '<br/>'),
+      text: cleanBody,
+      html: boldHtmlBody,
     });
 
     return NextResponse.json({ success: true, messageId: info.messageId });
